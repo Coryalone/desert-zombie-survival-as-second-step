@@ -29,6 +29,7 @@ function soldierCenter(bytes) {
     ]) {
       const context = await browser.newContext({
         viewport: { width, height }, deviceScaleFactor: 1, hasTouch: touch,
+        locale: 'ru-RU',
       });
       const page = await context.newPage();
       const errors = [];

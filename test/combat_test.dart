@@ -1,29 +1,35 @@
-import 'package:flame/components.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter/widgets.dart';
+import 'package:flame/game.dart';
 import 'package:desert_zombie_survival/game/highway_game.dart';
 
-Future<HighwayGame> setupGame() async {
+Future<HighwayGame> setupGame(WidgetTester tester) async {
   final game = HighwayGame(spawnEnabled: false);
-  game.onGameResize(Vector2(960, 540));
-  await game.toBeLoaded();
-  await game.ready();
+  await tester.pumpWidget(Directionality(
+    textDirection: TextDirection.ltr,
+    child: GameWidget(game: game),
+  ));
+  await tester.runAsync(() async { await game.toBeLoaded(); });
+  await tester.pump();
+  await tester.runAsync(() => game.ready());
+  game.pauseEngine();
   game.shotClock = 100;
   return game;
 }
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
-  test('Flame collisions consume a bullet once and kill with two hits', () async {
-    final game = await setupGame();
+  testWidgets('Flame collisions consume a bullet once and kill with two hits', (tester) async {
+    final game = await setupGame(tester);
     final zombie = game.addBody(ZombieBody(game, 500, 300));
     game.addBody(BulletBody(game, 500, 350));
-    await game.ready();
+    await tester.runAsync(() => game.ready());
     for (var i = 0; i < 30; i++) {
       game.update(1 / 120);
     }
     expect(zombie.health, 1);
     game.addBody(BulletBody(game, 500, zombie.position.y + 45));
-    await game.ready();
+    await tester.runAsync(() => game.ready());
     for (var i = 0; i < 30; i++) {
       game.update(1 / 120);
     }
@@ -31,10 +37,10 @@ void main() {
     expect(game.run.kills, 1);
     game.close();
   });
-  test('overlapping zombie damages squad once', () async {
-    final game = await setupGame();
+  testWidgets('overlapping zombie damages squad once', (tester) async {
+    final game = await setupGame(tester);
     game.addBody(ZombieBody(game, 500, 600));
-    await game.ready();
+    await tester.runAsync(() => game.ready());
     for (var i = 0; i < 60; i++) {
       game.update(1 / 120);
     }
@@ -42,10 +48,10 @@ void main() {
     expect(game.bodies.whereType<ZombieBody>(), isEmpty);
     game.close();
   });
-  test('a zombie passing beside the squad causes no damage', () async {
-    final game = await setupGame();
+  testWidgets('a zombie passing beside the squad causes no damage', (tester) async {
+    final game = await setupGame(tester);
     game.addBody(ZombieBody(game, 170, 700));
-    await game.ready();
+    await tester.runAsync(() => game.ready());
     for (var i = 0; i < 120; i++) {
       game.update(1 / 120);
     }
@@ -53,9 +59,9 @@ void main() {
     expect(game.bodies.whereType<ZombieBody>(), isEmpty);
     game.close();
   });
-  test('30 and 120 fps advance the same active time', () async {
-    final a = await setupGame();
-    final b = await setupGame();
+  testWidgets('30 and 120 fps advance the same active time', (tester) async {
+    final a = await setupGame(tester);
+    final b = await setupGame(tester);
     for (var i = 0; i < 300; i++) {
       a.update(1 / 30);
     }

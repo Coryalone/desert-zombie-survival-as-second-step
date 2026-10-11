@@ -1,0 +1,45 @@
+name: Flutter checks
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: dart tool/prepare.dart
+      - run: flutter pub get
+      - run: flutter analyze
+      - run: flutter build web --release --no-web-resources-cdn
+      - run: flutter build apk --release
+      - name: Check packaged permissions
+        shell: bash
+        run: |
+          AAPT=$(find "$ANDROID_HOME/build-tools" -name aapt -type f | sort -V | tail -1)
+          test -n "$AAPT"
+          "$AAPT" dump permissions build/app/outputs/flutter-apk/app-release.apk > permissions.txt
+          cat permissions.txt
+          if grep -q "uses-permission:" permissions.txt; then
+            echo "Unexpected application permission"
+            exit 1
+          fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: desert-highway-prototype
+          path: |
+            build/app/outputs/flutter-apk/app-release.apk
+            build/web/
+            pubspec.lock
+            permissions.txt

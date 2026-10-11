@@ -33,10 +33,22 @@ function soldierCenter(bytes) {
       const page = await context.newPage();
       const errors = [];
       page.on('pageerror', e => errors.push(String(e)));
+      page.on('console', m => console.log(name + ': ' + m.type() + ': ' + m.text()));
+      page.on('requestfailed', r => console.log('REQUEST FAILED: ' + r.url() + ' ' + r.failure()?.errorText));
       await page.goto('http://127.0.0.1:8765');
-      await page.waitForSelector('canvas', { timeout: 60000, state: 'attached' });
-      await page.waitForTimeout(1500);
+      let visible = false;
+      for (let attempt = 0; attempt < 30; attempt++) {
+        await page.waitForTimeout(1000);
+        const frame = await page.screenshot({ path: 'build/browser-check/' + name + '-loading.png' });
+        try { soldierCenter(frame); visible = true; break; } catch (_) {}
+      }
+      if (!visible) {
+        console.log('PAGE HTML: ' + await page.content());
+        console.log('PREVIEW_BASE64=' + (await page.screenshot()).toString('base64'));
+        throw Error(name + ': no rendered squad; ' + errors.join('; '));
+      }
       const initial = await page.screenshot({ path: 'build/browser-check/' + name + '-start.png' });
+      console.log('PREVIEW_BASE64=' + initial.toString('base64'));
       const x1 = soldierCenter(initial);
       if (touch) {
         const cdp = await context.newCDPSession(page);

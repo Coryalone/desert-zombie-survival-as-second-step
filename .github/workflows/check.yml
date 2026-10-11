@@ -48,10 +48,13 @@ jobs:
           test -n "$AAPT"
           "$AAPT" dump permissions build/app/outputs/flutter-apk/app-release.apk > permissions.txt
           cat permissions.txt
-          if grep -q "uses-permission:" permissions.txt; then
+          if grep "uses-permission:" permissions.txt | grep -Fvx "uses-permission: name='com.coryalone.desert_zombie_survival.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION'"; then
             echo "Unexpected application permission"
             exit 1
           fi
+          "$AAPT" dump xmltree build/app/outputs/flutter-apk/app-release.apk AndroidManifest.xml > manifest.txt
+          grep -E 'android:allowBackup.*0x0' manifest.txt
+          grep -E 'android:protectionLevel.*0x2' manifest.txt
       - uses: actions/upload-artifact@v4
         with:
           name: desert-highway-prototype
@@ -60,3 +63,4 @@ jobs:
             build/web/
             pubspec.lock
             permissions.txt
+            manifest.txt

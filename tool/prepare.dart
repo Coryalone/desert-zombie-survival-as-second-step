@@ -52,7 +52,7 @@ Future<void> main() async {
       '<manifest xmlns:android="http://schemas.android.com/apk/res/android"/>\n',
     );
   }
-  print('Android and Web ready. App manifests contain no INTERNET permission.');
+  stdout.writeln('Android and Web ready. App manifests contain no INTERNET permission.');
 }
 
 void copyMissing(Directory source, Directory destination) {

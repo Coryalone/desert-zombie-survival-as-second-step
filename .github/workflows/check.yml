@@ -18,10 +18,12 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
+          flutter-version: '3.47.7'
           cache: true
       - run: dart tool/prepare.dart
       - run: flutter pub get
       - run: flutter analyze
+      - run: flutter test
       - run: flutter build web --release --no-web-resources-cdn
       - run: flutter build apk --release
       - name: Check packaged permissions

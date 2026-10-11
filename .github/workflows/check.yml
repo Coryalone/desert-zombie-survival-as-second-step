@@ -25,6 +25,21 @@ jobs:
       - run: flutter analyze
       - run: flutter test
       - run: flutter build web --release --no-web-resources-cdn
+      - name: Browser smoke checks
+        shell: bash
+        run: |
+          npm install --prefix "$RUNNER_TEMP/ui-check" playwright@1.56.1 pngjs@7.0.0
+          export NODE_PATH="$RUNNER_TEMP/ui-check/node_modules"
+          "$RUNNER_TEMP/ui-check/node_modules/.bin/playwright" install --with-deps chromium
+          python3 -m http.server 8765 --bind 127.0.0.1 --directory build/web > /tmp/highway-web.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill "$SERVER_PID"' EXIT
+          node tool/browser_check.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: browser-screenshots
+          path: build/browser-check/
       - run: flutter build apk --release
       - name: Check packaged permissions
         shell: bash

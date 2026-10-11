@@ -130,7 +130,9 @@ class _BattleScreenState extends State<BattleScreen> with WidgetsBindingObserver
                     behavior: HitTestBehavior.opaque,
                     onPointerDown: (event) {
                       if (pointer != null || !game.run.playing ||
-                          (event.buttons & 1) == 0) return;
+                          (event.buttons & 1) == 0) {
+                        return;
+                      }
                       focus.requestFocus();
                       pointer = event.pointer;
                       pressX = event.position.dx;

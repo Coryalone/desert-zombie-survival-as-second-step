@@ -120,6 +120,7 @@ class HighwayGame extends FlameGame with HasCollisionDetection {
     paintHighway(canvas, Size(canvasSize.x, canvasSize.y),
         run.elapsed, bodies, initialized ? squad.position.x : 500,
         run.soldiers, hitFlash, shotClock);
+    super.render(canvas);
   }
 
   void close() {
@@ -196,8 +197,8 @@ class ZombieBody extends CombatBody {
   }
 
   @override
-  void onCollisionStart(Set<Vector2> points, PositionComponent other) {
-    super.onCollisionStart(points, other);
+  void onCollisionStart(Set<Vector2> intersectionPoints, PositionComponent other) {
+    super.onCollisionStart(intersectionPoints, other);
     if (spent || !battle.run.playing) return;
     if (other is SquadBody) {
       battle.hurt(6);
@@ -219,8 +220,8 @@ class BulletBody extends CombatBody {
   }
 
   @override
-  void onCollisionStart(Set<Vector2> points, PositionComponent other) {
-    super.onCollisionStart(points, other);
+  void onCollisionStart(Set<Vector2> intersectionPoints, PositionComponent other) {
+    super.onCollisionStart(intersectionPoints, other);
     if (spent || !battle.run.playing) return;
     if (other is ZombieBody && !other.spent) {
       retire();

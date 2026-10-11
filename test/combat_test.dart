@@ -5,7 +5,7 @@ import 'package:desert_zombie_survival/game/highway_game.dart';
 Future<HighwayGame> setupGame() async {
   final game = HighwayGame(spawnEnabled: false);
   game.onGameResize(Vector2(960, 540));
-  await game.load();
+  await game.toBeLoaded();
   await game.ready();
   game.shotClock = 100;
   return game;
